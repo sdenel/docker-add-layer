@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+from tempfile import TemporaryDirectory
+import tarfile
+import sys
+import os
+import json
+import random
+import hashlib
+
+
+sha256_hash = hashlib.sha256()
+def compute_hash(filename):
+    with open(filename,"rb") as f:
+        # Read and update hash string value in blocks of 4K
+        for byte_block in iter(lambda: f.read(4096),b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+if len(sys.argv) != 4:
+    print("docker-add-layer input-image file-or-directory-to-add output-image")
+    exit(1)
+
+INPUT_IMAGE = sys.argv[1]
+FILE_OR_DIR_TO_ADD = sys.argv[2]
+OUTPUT_IMAGE = sys.argv[3]
+
+with TemporaryDirectory() as temp_dir:
+    t = tarfile.TarFile(INPUT_IMAGE)
+    t.extractall(temp_dir)
+
+    # Creating the directory for the new layer
+    # TODO: the current directory name is randomly generated. Should it be the ChainID?
+    layer_dir_name = str(random.getrandbits(128))
+    layer_dir_path = os.path.join(temp_dir, layer_dir_name)
+    os.mkdir(layer_dir_path)
+
+    # Creating layer.tar
+    layer_path = os.path.join(layer_dir_path, "layer.tar")
+    with tarfile.open(layer_path, "w") as tar_out:
+        tar_out.add(sys.argv[2])
+    layer_hash = compute_hash(layer_path)
+
+    #
+    # Get manifest
+    #
+    manifest_path = os.path.join(temp_dir, "manifest.json")
+    with open(manifest_path, "r") as manifest_file:
+        manifest = json.load(manifest_file)
+
+    #
+    # Updating the configuration file
+    #
+    conf_path = os.path.join(temp_dir, manifest[0]["Config"])
+    with open(conf_path, "r") as conf_file:
+        conf = json.load(conf_file)
+    conf["rootfs"]["diff_ids"].append("sha256:" + layer_hash)
+    with open(conf_path, "w") as conf_file:
+        json.dump(conf, conf_file)
+    conf_hash = compute_hash(conf_path)
+    os.rename(conf_path,  os.path.join(temp_dir, conf_hash+".json"))
+    manifest[0]["Config"] = conf_hash+".json"
+
+    #
+    # Updating manifest
+    #
+    manifest[0]["Layers"].append(layer_dir_name + "/layer.tar")
+    with open(manifest_path, "w") as manifest_file:
+        json.dump(manifest, manifest_file)
+
+    with tarfile.open(OUTPUT_IMAGE, "w") as tar_out:
+        os.chdir(temp_dir)
+        tar_out.add(".")
