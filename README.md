@@ -4,8 +4,18 @@ A python script adding a layer to a Docker image **without** needing the daemon.
 
 Useful, for example, during a CI pipeline inside Docker when you don't want to do Docker in Docker. Requires Python 3.1+ 
 
+# Installation
+
+```bash
+# With wget:
+wget https://raw.githubusercontent.com/sdenel/docker-add-layer/master/docker-add-layer
+# With curl:
+curl https://raw.githubusercontent.com/sdenel/docker-add-layer/master/docker-add-layer > docker-add-layer
+```
+
+
 # Example
-The following lines build a new image with a C program printing "hello world!". The image is gzipped afterward, but it is an optional step:
+The following lines builds a new image with a C program printing "hello world!". The image is gzipped afterward, but it is an optional step:
 ```bash
 docker pull gcr.io/distroless/base
 docker save -o base gcr.io/distroless/base
