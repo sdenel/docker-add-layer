@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 from tempfile import TemporaryDirectory
 import tarfile
 import sys
@@ -7,14 +8,16 @@ import json
 import random
 import hashlib
 
-
 sha256_hash = hashlib.sha256()
+
+
 def compute_hash(filename):
-    with open(filename,"rb") as f:
+    with open(filename, "rb") as f:
         # Read and update hash string value in blocks of 4K
-        for byte_block in iter(lambda: f.read(4096),b""):
+        for byte_block in iter(lambda: f.read(4096), b""):
             sha256_hash.update(byte_block)
     return sha256_hash.hexdigest()
+
 
 if len(sys.argv) != 4:
     print("docker-add-layer input-image file-or-directory-to-add output-image")
@@ -58,7 +61,7 @@ with TemporaryDirectory() as temp_dir:
     with open(conf_path, "w") as conf_file:
         json.dump(conf, conf_file)
     conf_hash = compute_hash(conf_path)
-    os.rename(conf_path,  os.path.join(temp_dir, conf_hash+".json"))
+    os.rename(conf_path, os.path.join(temp_dir, conf_hash + ".json"))
     manifest[-1]["Config"] = conf_hash + ".json"
 
     #
