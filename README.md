@@ -11,6 +11,8 @@ Useful, for example, during a CI pipeline inside Docker when you don't want to d
 wget https://raw.githubusercontent.com/sdenel/docker-add-layer/master/docker-add-layer
 # With curl:
 curl https://raw.githubusercontent.com/sdenel/docker-add-layer/master/docker-add-layer > docker-add-layer
+# Then:
+chmod +x docker-add-layer
 ```
 
 
