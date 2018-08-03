@@ -42,7 +42,7 @@ with TemporaryDirectory() as temp_dir:
     layer_path = os.path.join(layer_dir_path, "layer.tar")
     with tarfile.open(layer_path, "w") as tar_out:
         to_add = sys.argv[2]
-        if os.path.isfile():
+        if os.path.isfile(to_add):
             tar_out.add(to_add)
         else:
             tar_out.add(to_add, arcname="./")
