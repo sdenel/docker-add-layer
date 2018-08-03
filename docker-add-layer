@@ -34,14 +34,18 @@ with TemporaryDirectory() as temp_dir:
     # Creating the directory for the new layer
     # TODO: the current directory name is randomly generated.
     # Should it be the ChainID?
-    layer_dir_name = str(random.getrandbits(128))
+    layer_dir_name = str(random.getrandbits(192))
     layer_dir_path = os.path.join(temp_dir, layer_dir_name)
     os.mkdir(layer_dir_path)
 
     # Creating layer.tar
     layer_path = os.path.join(layer_dir_path, "layer.tar")
     with tarfile.open(layer_path, "w") as tar_out:
-        tar_out.add(sys.argv[2], arcname="./")
+        to_add = sys.argv[2]
+        if os.path.isfile():
+            tar_out.add(to_add)
+        else:
+            tar_out.add(to_add, arcname="./")
     layer_hash = compute_hash(layer_path)
 
     #
