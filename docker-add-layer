@@ -41,7 +41,7 @@ with TemporaryDirectory() as temp_dir:
     # Creating layer.tar
     layer_path = os.path.join(layer_dir_path, "layer.tar")
     with tarfile.open(layer_path, "w") as tar_out:
-        tar_out.add(sys.argv[2])
+        tar_out.add(sys.argv[2], arcname="./")
     layer_hash = compute_hash(layer_path)
 
     #
